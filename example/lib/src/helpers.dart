@@ -16,4 +16,8 @@ extension DurationExt on Duration {
 
     return formatTime.map((e) => dataTime[e] ?? '').toList().join(':');
   }
+
+  String get hhmmss {
+    return toString().split('.').first.padLeft(8, '0');
+  }
 }

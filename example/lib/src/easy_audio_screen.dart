@@ -1,7 +1,10 @@
+import 'dart:async';
+
 import 'package:easy_audio/easy_audio.dart';
 import 'package:example/src/helpers.dart';
 import 'package:flutter/material.dart';
 
+import 'fixed_wareform.dart';
 import 'record_data.dart';
 
 const _kOffsetHide = Offset(0, 2);
@@ -16,6 +19,8 @@ class EasyAudioExampleScreen extends StatefulWidget {
 
 class _EasyAudioExampleScreenState extends State<EasyAudioExampleScreen> {
   final EasyAudioController _audioController = EasyAudioController();
+  Timer? _timer;
+  final ValueNotifier<int> _ctlSecond = ValueNotifier(0);
   var _offset = _kOffsetHide;
   var _urlPlay = '';
 
@@ -36,33 +41,118 @@ class _EasyAudioExampleScreenState extends State<EasyAudioExampleScreen> {
   }
 
   void _startRecord() {
-    if (_audioController.isRecording) {
-      _stopRecord();
-    } else {
-      _audioController.record();
-    }
-  }
+    _audioController.record();
 
-  void _stopRecord() {
-    _audioController.stopRecorder()?.then((value) {
-      if (value != null) {
-        if (_offset == _kOffsetHide) {
-          _offset = _kOffsetShow;
-        }
-        final id = kMockDataRecord.length + 1;
-        kMockDataRecord.insert(
-          0,
-          RecordData(
-            createdAt: DateTime.now(),
-            id: '#$id',
-            title: 'Recording-'
-                '${id.toString().padLeft(3, '0')}',
-            url: value,
-            totalTime: Duration(milliseconds: _audioController.timeRecord),
+    _timer = null;
+    _ctlSecond.value = 0;
+    _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
+      _ctlSecond.value = timer.tick;
+    });
+
+    showModalBottomSheet<bool>(
+      context: context,
+      backgroundColor: Colors.transparent,
+      barrierColor: Colors.transparent,
+      builder: (BuildContext context) {
+        return Container(
+          decoration: BoxDecoration(
+            color: Colors.white,
+            boxShadow: [
+              BoxShadow(
+                color: Colors.grey.withOpacity(0.2),
+                blurRadius: 1.0,
+                offset: const Offset(0, -1),
+                spreadRadius: 1.0,
+              ),
+            ],
+          ),
+          height: 150,
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  IconButton(
+                    onPressed: () => Navigator.of(context).pop(false),
+                    icon: Container(
+                      decoration: BoxDecoration(
+                        color: Colors.grey.withOpacity(0.4),
+                        borderRadius: BorderRadius.circular(50),
+                      ),
+                      child: Icon(
+                        Icons.close,
+                        size: 20,
+                        color: Theme.of(context).primaryColor,
+                      ),
+                    ),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.only(left: 10),
+                    child: ValueListenableBuilder<int>(
+                      valueListenable: _ctlSecond,
+                      builder: (_, sec, __) {
+                        return Text(Duration(seconds: sec).hhmmss);
+                      },
+                    ),
+                  ),
+                  const Spacer(),
+                  IconButton(
+                    onPressed: () => Navigator.of(context).pop(true),
+                    icon: Container(
+                      padding: const EdgeInsets.all(5),
+                      decoration: BoxDecoration(
+                        color: Colors.grey.withOpacity(0.2),
+                        borderRadius: BorderRadius.circular(50),
+                      ),
+                      child: Icon(
+                        Icons.send_rounded,
+                        size: 20,
+                        color: Theme.of(context).primaryColor,
+                      ),
+                    ),
+                  )
+                ],
+              ),
+              const Expanded(
+                child: Center(
+                  child: SizedBox(
+                    height: 100,
+                    child: AnimatedWaveform(divide: 3),
+                  ),
+                ),
+              ),
+            ],
           ),
         );
+      },
+    ).then((value) {
+      _timer?.cancel();
+      _stopRecord(value ?? false);
+    });
+  }
 
-        _playAudio(value);
+  void _stopRecord(bool save) {
+    _audioController.stopRecorder()?.then((value) {
+      if (save) {
+        if (value != null) {
+          if (_offset == _kOffsetHide) {
+            _offset = _kOffsetShow;
+          }
+          final id = kMockDataRecord.length + 1;
+          kMockDataRecord.insert(
+            0,
+            RecordData(
+              createdAt: DateTime.now(),
+              id: '#$id',
+              title: 'Recording-'
+                  '${id.toString().padLeft(3, '0')}',
+              url: value,
+              totalTime: Duration(milliseconds: _audioController.timeRecord),
+            ),
+          );
+
+          _playAudio(value);
+        }
       }
     });
   }
@@ -178,18 +268,6 @@ class _EasyAudioExampleScreenState extends State<EasyAudioExampleScreen> {
                     child: Center(
                       child: Column(
                         children: [
-                          AnimatedBuilder(
-                            animation: _audioController,
-                            builder: (context, child) {
-                              if (_audioController.isRecording) {
-                                return const Padding(
-                                  padding: EdgeInsets.all(8.0),
-                                  child: LinearProgressIndicator(),
-                                );
-                              }
-                              return const SizedBox();
-                            },
-                          ),
                           GestureDetector(
                             onTap: _startRecord,
                             child: Container(
