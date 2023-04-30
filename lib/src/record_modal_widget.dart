@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 
 import 'easy_audio_controller.dart';
 import 'entities/record_data.dart';
-import 'helpers.dart';
+import 'record_audio_constants.dart';
 import 'widgets/waveforms_sound/fixed_wareform.dart';
 
 class RecordModalWidget extends StatefulWidget {
