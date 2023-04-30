@@ -2,6 +2,8 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 
+import '../audio_template.dart';
+
 class FixedWaveform extends StatelessWidget {
   final List<double> templates;
   final Size size;
@@ -112,7 +114,7 @@ class AnimatedWaveform extends StatefulWidget {
 
   const AnimatedWaveform({
     Key? key,
-    this.templates = const [3, 6, 9, 12, 15, 17, 12, 10, 8, 6, 2],
+    this.templates = audioTemplates,
     this.playing = true,
     this.form = WaveForm.contain,
     this.waveThickness = 4,

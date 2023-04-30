@@ -1,10 +1,9 @@
-import 'dart:async';
 
 import 'package:easy_audio/easy_audio.dart';
 import 'package:example/src/helpers.dart';
+import 'package:example/src/audio/record_audio_coodinator.dart';
 import 'package:flutter/material.dart';
 
-import 'fixed_wareform.dart';
 import 'record_data.dart';
 
 const _kOffsetHide = Offset(0, 2);
@@ -18,167 +17,12 @@ class EasyAudioExampleScreen extends StatefulWidget {
 }
 
 class _EasyAudioExampleScreenState extends State<EasyAudioExampleScreen> {
-  final EasyAudioController _audioController = EasyAudioController();
-  Timer? _timer;
-  final ValueNotifier<int> _ctlSecond = ValueNotifier(0);
-  var _offset = _kOffsetHide;
-  var _urlPlay = '';
+  final  _audioController = EasyAudioController();
 
-  void _init() {
-    _audioController.initPlayer(false);
-    _audioController.addListener(() {
-      if (_offset == _kOffsetHide && _audioController.isOpenPlayer) {
-        setState(() {
-          _offset = _kOffsetShow;
-        });
-      }
-      if (_audioController.isPlaying == false) {
-        setState(() {
-          _offset = _kOffsetHide;
-        });
-      }
-    });
-  }
+  final _offset = _kOffsetHide;
 
   void _startRecord() {
-    _audioController.record();
-
-    _timer = null;
-    _ctlSecond.value = 0;
-    _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
-      _ctlSecond.value = timer.tick;
-    });
-
-    showModalBottomSheet<bool>(
-      context: context,
-      backgroundColor: Colors.transparent,
-      barrierColor: Colors.transparent,
-      builder: (BuildContext context) {
-        return Container(
-          decoration: BoxDecoration(
-            color: Colors.white,
-            boxShadow: [
-              BoxShadow(
-                color: Colors.grey.withOpacity(0.2),
-                blurRadius: 1.0,
-                offset: const Offset(0, -1),
-                spreadRadius: 1.0,
-              ),
-            ],
-          ),
-          height: 150,
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.start,
-            children: [
-              Row(
-                children: [
-                  IconButton(
-                    onPressed: () => Navigator.of(context).pop(false),
-                    icon: Container(
-                      decoration: BoxDecoration(
-                        color: Colors.grey.withOpacity(0.4),
-                        borderRadius: BorderRadius.circular(50),
-                      ),
-                      child: Icon(
-                        Icons.close,
-                        size: 20,
-                        color: Theme.of(context).primaryColor,
-                      ),
-                    ),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.only(left: 10),
-                    child: ValueListenableBuilder<int>(
-                      valueListenable: _ctlSecond,
-                      builder: (_, sec, __) {
-                        return Text(Duration(seconds: sec).hhmmss);
-                      },
-                    ),
-                  ),
-                  const Spacer(),
-                  IconButton(
-                    onPressed: () => Navigator.of(context).pop(true),
-                    icon: Container(
-                      padding: const EdgeInsets.all(5),
-                      decoration: BoxDecoration(
-                        color: Colors.grey.withOpacity(0.2),
-                        borderRadius: BorderRadius.circular(50),
-                      ),
-                      child: Icon(
-                        Icons.send_rounded,
-                        size: 20,
-                        color: Theme.of(context).primaryColor,
-                      ),
-                    ),
-                  )
-                ],
-              ),
-              const Expanded(
-                child: Center(
-                  child: SizedBox(
-                    height: 100,
-                    child: AnimatedWaveform(divide: 3),
-                  ),
-                ),
-              ),
-            ],
-          ),
-        );
-      },
-    ).then((value) {
-      _timer?.cancel();
-      _stopRecord(value ?? false);
-    });
-  }
-
-  void _stopRecord(bool save) {
-    _audioController.stopRecorder()?.then((value) {
-      if (save) {
-        if (value != null) {
-          if (_offset == _kOffsetHide) {
-            _offset = _kOffsetShow;
-          }
-          final id = kMockDataRecord.length + 1;
-          kMockDataRecord.insert(
-            0,
-            RecordData(
-              createdAt: DateTime.now(),
-              id: '#$id',
-              title: 'Recording-'
-                  '${id.toString().padLeft(3, '0')}',
-              url: value,
-              totalTime: Duration(milliseconds: _audioController.timeRecord),
-            ),
-          );
-
-          _playAudio(value);
-        }
-      }
-    });
-  }
-
-  void _playAudio(String url) {
-    final currentFocus = FocusScope.of(context);
-    if (!currentFocus.hasPrimaryFocus) {
-      currentFocus.unfocus();
-    }
-
-    setState(() {
-      _urlPlay = url;
-      _audioController.play(_urlPlay);
-    });
-  }
-
-  @override
-  void initState() {
-    super.initState();
-    _init();
-  }
-
-  @override
-  void dispose() {
-    _audioController.forceDispose();
-    super.dispose();
+    context.startRecord();
   }
 
   @override
@@ -206,16 +50,16 @@ class _EasyAudioExampleScreenState extends State<EasyAudioExampleScreen> {
                             horizontal: 16, vertical: 0),
                         dense: true,
                         onTap: () {
-                          final isPlaying = _urlPlay == item.title;
-                          if (isPlaying) {
-                            return;
-                          } else {
-                            if (_offset == _kOffsetHide) {
-                              _offset = _kOffsetShow;
-                            }
+                          // final isPlaying = _urlPlay == item.title;
+                          // if (isPlaying) {
+                          //   return;
+                          // } else {
+                          //   if (_offset == _kOffsetHide) {
+                          //     _offset = _kOffsetShow;
+                          //   }
 
-                            _playAudio(item.url);
-                          }
+                          //   _playAudio(item.url);
+                          // }
                         },
                         title: Text(
                           item.title,
