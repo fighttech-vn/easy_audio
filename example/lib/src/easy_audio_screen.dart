@@ -1,9 +1,6 @@
 import 'package:easy_audio/easy_audio.dart';
-import 'package:example/src/helpers.dart';
+import 'package:example/src/constans.dart';
 import 'package:flutter/material.dart';
-
-const _kOffsetHide = Offset(0, 2);
-const _kOffsetShow = Offset(0, 0);
 
 class EasyAudioExampleScreen extends StatefulWidget {
   const EasyAudioExampleScreen({super.key});
@@ -14,7 +11,7 @@ class EasyAudioExampleScreen extends StatefulWidget {
 
 class _EasyAudioExampleScreenState extends State<EasyAudioExampleScreen> {
   final EasyAudioController _audioController = EasyAudioController();
-  var _offset = _kOffsetHide;
+  var _offset = kOffsetHide;
   var _urlPlay = '';
 
   void _startRecord() {
@@ -29,14 +26,14 @@ class _EasyAudioExampleScreenState extends State<EasyAudioExampleScreen> {
   void _init() {
     _audioController.initPlayer(false);
     _audioController.addListener(() {
-      if (_offset == _kOffsetHide && _audioController.isOpenPlayer) {
+      if (_offset == kOffsetHide && _audioController.isOpenPlayer) {
         setState(() {
-          _offset = _kOffsetShow;
+          _offset = kOffsetShow;
         });
       }
       if (_audioController.isPlaying == false) {
         setState(() {
-          _offset = _kOffsetHide;
+          _offset = kOffsetHide;
         });
       }
     });
@@ -69,8 +66,8 @@ class _EasyAudioExampleScreenState extends State<EasyAudioExampleScreen> {
   @override
   Widget build(BuildContext context) {
     const sizeBottom = 110.0;
-    final isShowBottom = MediaQuery.of(context).viewInsets.bottom == 0 &&
-        _offset == _kOffsetShow;
+    final isShowBottom =
+        MediaQuery.of(context).viewInsets.bottom == 0 && _offset == kOffsetShow;
 
     return Scaffold(
       appBar: AppBar(
@@ -95,8 +92,8 @@ class _EasyAudioExampleScreenState extends State<EasyAudioExampleScreen> {
                           if (isPlaying) {
                             return;
                           } else {
-                            if (_offset == _kOffsetHide) {
-                              _offset = _kOffsetShow;
+                            if (_offset == kOffsetHide) {
+                              _offset = kOffsetShow;
                             }
 
                             _playAudio(item.url);
@@ -106,7 +103,7 @@ class _EasyAudioExampleScreenState extends State<EasyAudioExampleScreen> {
                           item.title ?? 'record',
                           style: Theme.of(context).textTheme.bodyLarge,
                         ),
-                        trailing: Text(item.totalTime.timemmss),
+                        trailing: Text(item.totalTime.hhmmss),
                       ),
                     )
                     .toList(),
@@ -118,11 +115,11 @@ class _EasyAudioExampleScreenState extends State<EasyAudioExampleScreen> {
                 child: AnimatedSlide(
                   duration: const Duration(milliseconds: 300),
                   offset: MediaQuery.of(context).viewInsets.bottom != 0
-                      ? _kOffsetHide
+                      ? kOffsetHide
                       : _offset,
                   child: EasyAudioPlayer(
                     controller: _audioController,
-                    formatTimeSlider: (duration) => duration.timemmss,
+                    formatTimeSlider: (duration) => duration.hhmmss,
                     builderSlider: (duration, posision, isLoadDone) {
                       var timeValue = 0.0;
                       if (isLoadDone && posision != null && duration != null) {
@@ -145,8 +142,8 @@ class _EasyAudioExampleScreenState extends State<EasyAudioExampleScreen> {
                 child: AnimatedSlide(
                   duration: const Duration(milliseconds: 300),
                   offset: MediaQuery.of(context).viewInsets.bottom != 0
-                      ? _kOffsetHide
-                      : (_offset == _kOffsetHide ? _kOffsetShow : _kOffsetHide),
+                      ? kOffsetHide
+                      : (_offset == kOffsetHide ? kOffsetShow : kOffsetHide),
                   child: Container(
                     margin: const EdgeInsets.only(bottom: 10),
                     width: MediaQuery.of(context).size.width,
@@ -184,30 +181,3 @@ class _EasyAudioExampleScreenState extends State<EasyAudioExampleScreen> {
     );
   }
 }
-
-final kMockDataRecord = [
-  RecordData(
-    title: 'Recording-003',
-    createdAt: DateTime(2022, 12, 5, 09, 25),
-    id: '006',
-    totalTime: const Duration(seconds: 91),
-    url:
-        'https://flutter-sound.canardoux.xyz/web_example/assets/extract/05.mp3',
-  ),
-  RecordData(
-    title: 'Recording-002',
-    createdAt: DateTime(2022, 12, 4, 09, 25),
-    id: '005',
-    totalTime: const Duration(seconds: 62),
-    url:
-        'https://flutter-sound.canardoux.xyz/web_example/assets/extract/01.aac',
-  ),
-  RecordData(
-    title: 'Recording-001',
-    createdAt: DateTime(2022, 11, 29, 09, 25),
-    id: '004',
-    totalTime: const Duration(seconds: 91),
-    url:
-        'https://flutter-sound.canardoux.xyz/web_example/assets/extract/05.mp3',
-  ),
-];
