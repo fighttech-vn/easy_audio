@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:io';
 
 import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/material.dart';
@@ -128,8 +127,8 @@ class EasyAudioController extends ChangeNotifier implements EasyAudioInterface {
       _startRecord = null;
       if (await _audioRecorder.hasPermission()) {
         _isRecording = true;
-        Directory tempDir = await getTemporaryDirectory();
-        String tempPath = tempDir.path;
+        final tempDir = await getTemporaryDirectory();
+        final tempPath = tempDir.path;
 
         await _audioRecorder.start(
           path: '$tempPath/recor_${DateTime.now().millisecondsSinceEpoch}.m4a',

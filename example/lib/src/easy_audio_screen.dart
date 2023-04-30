@@ -1,10 +1,6 @@
-
 import 'package:easy_audio/easy_audio.dart';
 import 'package:example/src/helpers.dart';
-import 'package:example/src/audio/record_audio_coodinator.dart';
 import 'package:flutter/material.dart';
-
-import 'record_data.dart';
 
 const _kOffsetHide = Offset(0, 2);
 const _kOffsetShow = Offset(0, 0);
@@ -17,12 +13,57 @@ class EasyAudioExampleScreen extends StatefulWidget {
 }
 
 class _EasyAudioExampleScreenState extends State<EasyAudioExampleScreen> {
-  final  _audioController = EasyAudioController();
-
-  final _offset = _kOffsetHide;
+  final EasyAudioController _audioController = EasyAudioController();
+  var _offset = _kOffsetHide;
+  var _urlPlay = '';
 
   void _startRecord() {
-    context.startRecord();
+    context.startRecord().then((value) {
+      if (value != null) {
+        kMockDataRecord.add(value);
+        _playAudio(value.url);
+      }
+    });
+  }
+
+  void _init() {
+    _audioController.initPlayer(false);
+    _audioController.addListener(() {
+      if (_offset == _kOffsetHide && _audioController.isOpenPlayer) {
+        setState(() {
+          _offset = _kOffsetShow;
+        });
+      }
+      if (_audioController.isPlaying == false) {
+        setState(() {
+          _offset = _kOffsetHide;
+        });
+      }
+    });
+  }
+
+  void _playAudio(String url) {
+    final currentFocus = FocusScope.of(context);
+    if (!currentFocus.hasPrimaryFocus) {
+      currentFocus.unfocus();
+    }
+
+    setState(() {
+      _urlPlay = url;
+      _audioController.play(_urlPlay);
+    });
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _init();
+  }
+
+  @override
+  void dispose() {
+    _audioController.forceDispose();
+    super.dispose();
   }
 
   @override
@@ -50,19 +91,19 @@ class _EasyAudioExampleScreenState extends State<EasyAudioExampleScreen> {
                             horizontal: 16, vertical: 0),
                         dense: true,
                         onTap: () {
-                          // final isPlaying = _urlPlay == item.title;
-                          // if (isPlaying) {
-                          //   return;
-                          // } else {
-                          //   if (_offset == _kOffsetHide) {
-                          //     _offset = _kOffsetShow;
-                          //   }
+                          final isPlaying = _urlPlay == item.title;
+                          if (isPlaying) {
+                            return;
+                          } else {
+                            if (_offset == _kOffsetHide) {
+                              _offset = _kOffsetShow;
+                            }
 
-                          //   _playAudio(item.url);
-                          // }
+                            _playAudio(item.url);
+                          }
                         },
                         title: Text(
-                          item.title,
+                          item.title ?? 'record',
                           style: Theme.of(context).textTheme.bodyLarge,
                         ),
                         trailing: Text(item.totalTime.timemmss),

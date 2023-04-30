@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
 
+import 'entities/record_data.dart';
 import 'record_modal_widget.dart';
 
 extension BuildContextAnimatedWaveform on BuildContext {
-  Future<T?> startRecord<T>() {
-    return showModalBottomSheet(
+  Future<RecordData?> startRecord() {
+    return showModalBottomSheet<RecordData?>(
       context: this,
       isDismissible: false,
       backgroundColor: Colors.transparent,

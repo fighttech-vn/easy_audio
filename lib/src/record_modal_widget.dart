@@ -1,10 +1,11 @@
 import 'dart:async';
 
-import 'package:easy_audio/easy_audio.dart';
-import 'package:example/src/helpers.dart';
 import 'package:flutter/material.dart';
 
-import 'widgets/fixed_wareform.dart';
+import 'easy_audio_controller.dart';
+import 'entities/record_data.dart';
+import 'helpers.dart';
+import 'widgets/waveforms_sound/fixed_wareform.dart';
 
 class RecordModalWidget extends StatefulWidget {
   const RecordModalWidget({super.key});
@@ -14,30 +15,41 @@ class RecordModalWidget extends StatefulWidget {
 }
 
 class _RecordModalWidgetState extends State<RecordModalWidget> {
-  final _ctlSecond = ValueNotifier(0);
-
-  final _audioController = EasyAudioController();
-
   Timer? _timer;
+  final _ctlSecond = ValueNotifier(0);
+  final _audioController = EasyAudioController();
 
   void _stopRecord(bool save) {
     if (!save) {
       return Navigator.of(context).pop();
     }
-    _audioController
-        .stopRecorder()
-        ?.then((value) => Navigator.of(context).pop(value));
 
+    _audioController.stopRecorder()?.then((value) {
+      RecordData? record;
+      if (value != null) {
+        record = RecordData(
+          createdAt: DateTime.now(),
+          url: value,
+          totalTime: Duration(milliseconds: _audioController.timeRecord),
+        );
+      }
+
+      Navigator.of(context).pop(record);
+    });
   }
 
   @override
   void initState() {
-    _audioController.record();
-
     _ctlSecond.value = 0;
     _timer = null;
     _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
       _ctlSecond.value = timer.tick;
+    });
+
+    _audioController.initPlayer().then((value) {
+      WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
+        _audioController.record();
+      });
     });
 
     super.initState();
@@ -45,7 +57,6 @@ class _RecordModalWidgetState extends State<RecordModalWidget> {
 
   @override
   void dispose() {
-    _stopRecord(true);
     _audioController.forceDispose();
     _timer?.cancel();
     super.dispose();
@@ -90,13 +101,13 @@ class _RecordModalWidgetState extends State<RecordModalWidget> {
                 child: ValueListenableBuilder<int>(
                   valueListenable: _ctlSecond,
                   builder: (_, sec, __) {
-                    return Text(Duration(seconds: sec).hhmmss);
+                    return Text(Duration(seconds: sec).formatTimeAudio);
                   },
                 ),
               ),
               const Spacer(),
               IconButton(
-                onPressed: () => Navigator.of(context).pop(true),
+                onPressed: () => _stopRecord(true),
                 icon: Container(
                   padding: const EdgeInsets.all(5),
                   decoration: BoxDecoration(
