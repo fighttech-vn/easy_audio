@@ -22,6 +22,8 @@ class _RecordModalWidgetState extends State<RecordModalWidget> {
   final _audioController = EasyAudioController();
   final _speechTextService = SpeechTextService();
 
+  final _textCtrl = TextEditingController();
+
   void _speechTextStatusListener(String p1) {}
 
   void _stopRecord(bool save) {
@@ -37,6 +39,7 @@ class _RecordModalWidgetState extends State<RecordModalWidget> {
             createdAt: DateTime.now(),
             url: value,
             totalTime: Duration(milliseconds: _audioController.timeRecord),
+            content: _textCtrl.text,
           );
         }
 
@@ -48,10 +51,11 @@ class _RecordModalWidgetState extends State<RecordModalWidget> {
   void _recordRun() {
     _audioController.record().then((value) {
       if (_audioController.isRecording) {
-        _speechTextService.startSpeak((p0) {
-          _ctlTextSpeech.value = p0;
-          print('----->>>> $p0');
-        });
+        if (_speechTextService.isInitialize) {
+          _speechTextService.startSpeak((p0) {
+            _textCtrl.text = p0;
+          });
+        }
       }
     });
   }
@@ -99,17 +103,33 @@ class _RecordModalWidgetState extends State<RecordModalWidget> {
       height: 150 + 200,
       child: Column(
         mainAxisAlignment: MainAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          SizedBox(
-            height: 200,
-            child: ValueListenableBuilder<String>(
-              valueListenable: _ctlTextSpeech,
-              builder: (_, text, __) {
-                return Text(
-                  text,
-                  maxLines: 4,
-                );
-              },
+          const Padding(
+            padding: EdgeInsets.symmetric(horizontal: 8),
+            child: Text(
+              'Content record:',
+              style: TextStyle(
+                fontSize: 15,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ),
+          Container(
+            constraints: const BoxConstraints(maxHeight: 200),
+            child: SingleChildScrollView(
+              child: ValueListenableBuilder<String>(
+                valueListenable: _ctlTextSpeech,
+                builder: (_, texts, __) {
+                  return Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    child: TextFormField(
+                      maxLines: 6,
+                      controller: _textCtrl,
+                    ),
+                  );
+                },
+              ),
             ),
           ),
           Row(
