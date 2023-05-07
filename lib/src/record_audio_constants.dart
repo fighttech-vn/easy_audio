@@ -91,3 +91,26 @@ extension DurationExt on Duration {
     return toString().split('.').first.padLeft(8, '0');
   }
 }
+
+extension StringHandleDiffExt on String {
+  String getDiff(String newString) {
+    String diffString = '';
+    bool startDiff = false;
+
+    for (var i = 0; i < newString.length; i++) {
+      if (i >= length) {
+        return newString;
+      } else {
+        if (newString[i] != this[i]) {
+          startDiff = true;
+        }
+
+        if (startDiff) {
+          diffString += newString[i];
+        }
+      }
+    }
+
+    return diffString;
+  }
+}

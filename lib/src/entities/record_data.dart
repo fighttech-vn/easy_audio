@@ -4,8 +4,10 @@ class RecordData {
   final String? title;
   final Duration totalTime;
   final DateTime createdAt;
+  final String? content;
 
   RecordData({
+    this.content,
     required this.url,
     this.id,
     this.title,
