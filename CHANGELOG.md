@@ -1,3 +1,4 @@
 ## 0.0.1
 
-* TODO: Describe initial release.
++ Add record audio
++ Support `speech_to_text`

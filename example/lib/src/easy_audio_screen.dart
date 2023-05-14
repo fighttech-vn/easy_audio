@@ -18,7 +18,7 @@ class _EasyAudioExampleScreenState extends State<EasyAudioExampleScreen> {
     context.startRecord().then((value) {
       if (value != null) {
         kMockDataRecord.add(value);
-        _playAudio(value.url);
+        // _playAudio(value.url);
       }
     });
   }
