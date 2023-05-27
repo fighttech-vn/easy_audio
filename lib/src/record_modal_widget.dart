@@ -68,7 +68,13 @@ class _RecordModalWidgetState extends State<RecordModalWidget> {
       _ctlSecond.value = timer.tick;
     });
 
-    _speechTextService.initSpeechToText(_speechTextStatusListener);
+    _speechTextService
+        .initSpeechToText(_speechTextStatusListener)
+        .then((value) {
+      if (value == false) {
+        Navigator.of(context).pop();
+      }
+    });
 
     _audioController.initPlayer().then((value) {
       WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
