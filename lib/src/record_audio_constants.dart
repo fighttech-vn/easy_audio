@@ -1,3 +1,11 @@
+const limitRetryInitSpeechToText = 3;
+
+enum StateInitSpeechText {
+  none,
+  succeeded,
+  failed,
+}
+
 const List<double> kAudioTemplates = [
   3.67,
   15.87,

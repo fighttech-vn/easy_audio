@@ -1,6 +1,6 @@
 name: easy_audio
 description: Easy record audio file, and friendly convert `speech_to_text`
-version: 0.0.2
+version: 0.0.4
 homepage: https://fighttech.vn
 
 environment:
@@ -15,6 +15,7 @@ dependencies:
   audioplayers: ^4.0.1
   path_provider: ^2.0.14
   speech_to_text: ^6.1.1
+  flutter_bloc: ^8.1.3
 
 dev_dependencies:
   flutter_test:
