@@ -10,7 +10,9 @@ import '../shared/widgets/waveforms_sound/fixed_wareform.dart';
 import 'bloc/speech_text_bloc.dart';
 
 class RecordModalWidget extends StatefulWidget {
-  const RecordModalWidget({super.key});
+  final String? title;
+
+  const RecordModalWidget({super.key, this.title});
 
   @override
   State<RecordModalWidget> createState() => _RecordModalWidgetState();
@@ -105,11 +107,11 @@ class _RecordModalWidgetState extends State<RecordModalWidget> {
             mainAxisAlignment: MainAxisAlignment.start,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Padding(
-                padding: EdgeInsets.symmetric(horizontal: 8),
+              Padding(
+                padding:const EdgeInsets.symmetric(horizontal: 8),
                 child: Text(
-                  'Content record:',
-                  style: TextStyle(
+                  widget.title ??'Transcript:',
+                  style: const TextStyle(
                     fontSize: 15,
                     fontWeight: FontWeight.bold,
                   ),
