@@ -2,7 +2,7 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 
-import '../../record_audio_constants.dart';
+import '../../../../record_audio_constants.dart';
 
 class FixedWaveform extends StatelessWidget {
   final List<double> templates;
