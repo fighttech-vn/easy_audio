@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../../../core/services/easy_audio_controller.dart';
 import '../../../domain/entities/process_player.dart';
-import '../services/easy_audio_controller.dart';
 
 const kSizeEasyAudioPlayer = 150.0;
 typedef BuilderSlider = Widget Function(

@@ -5,8 +5,8 @@ import 'package:flutter/material.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:record/record.dart';
 
-import '../../../domain/entities/amp.dart';
-import '../../../domain/entities/process_player.dart';
+import '../../domain/entities/amp.dart';
+import '../../domain/entities/process_player.dart';
 
 abstract class EasyAudioInterface {
   Future<void> initPlayer([bool disposeWhenParentDisponse = true]);

@@ -7,16 +7,21 @@ import 'presentation/record_modal/bloc/speech_text_bloc.dart';
 import 'presentation/record_modal/record_modal_widget.dart';
 
 extension BuildContextAnimatedWaveform on BuildContext {
-  Future<RecordData?> startRecord({String? transcript}) {
+  Future<RecordData?> startRecord(
+      {Future<bool?> Function()? onExits, String? transcript}) {
     return showModalBottomSheet<RecordData?>(
       context: this,
       isDismissible: false,
-      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
+      enableDrag: false,
+      backgroundColor: Colors.black26,
       barrierColor: Colors.transparent,
+      constraints: BoxConstraints(maxHeight: MediaQuery.of(this).size.height),
       builder: (BuildContext context) {
         return BlocProvider<SpeechTextBloc>(
           create: (context) => SpeechTextBloc(SpeechToTextUsecase()),
           child: RecordModalWidget(
+            onExits: onExits,
             title: transcript,
           ),
         );

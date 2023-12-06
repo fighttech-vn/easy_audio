@@ -1,3 +1,6 @@
+## 0.0.6
+- Handle exit record modal
+
 ## 0.0.4
 
 - Fix bug when initializing service for the first time
