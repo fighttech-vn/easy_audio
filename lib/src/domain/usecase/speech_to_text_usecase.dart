@@ -35,7 +35,7 @@ class SpeechToTextUsecase {
     Function(String) callback,
     String currentLocaleId,
   ) {
-    debugPrint('[EasyAudio]: start record');
+    debugPrint('[EasyAudio]: start record with locale: $currentLocaleId');
     _speech.listen(
       cancelOnError: false,
       localeId: currentLocaleId,
