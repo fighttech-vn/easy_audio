@@ -7,8 +7,11 @@ import 'presentation/record_modal/bloc/speech_text_bloc.dart';
 import 'presentation/record_modal/record_modal_widget.dart';
 
 extension BuildContextAnimatedWaveform on BuildContext {
-  Future<RecordData?> startRecord(
-      {Future<bool?> Function()? onExits, String? transcript}) {
+  Future<RecordData?> startRecord({
+    Future<bool?> Function()? onExits,
+    String? transcript,
+    String locale = 'en-US',
+  }) {
     return showModalBottomSheet<RecordData?>(
       context: this,
       isDismissible: false,
@@ -19,7 +22,8 @@ extension BuildContextAnimatedWaveform on BuildContext {
       constraints: BoxConstraints(maxHeight: MediaQuery.of(this).size.height),
       builder: (BuildContext context) {
         return BlocProvider<SpeechTextBloc>(
-          create: (context) => SpeechTextBloc(SpeechToTextUsecase()),
+          create: (context) =>
+              SpeechTextBloc(SpeechToTextUsecase(local: locale)),
           child: RecordModalWidget(
             onExits: onExits,
             title: transcript,

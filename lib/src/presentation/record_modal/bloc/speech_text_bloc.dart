@@ -13,8 +13,9 @@ part 'speech_text_state.dart';
 class SpeechTextBloc extends Bloc<SpeechTextEvent, SpeechTextState> {
   final SpeechToTextUsecase _speechToTextUsecase;
 
-  SpeechTextBloc(this._speechToTextUsecase)
-      : super(const SpeechTextInitial(SpeechTextStateUI())) {
+  SpeechTextBloc(
+    this._speechToTextUsecase,
+  ) : super(const SpeechTextInitial(SpeechTextStateUI())) {
     on<InitSpeechToTextEvent>(_onMapInitSpeechToTextEvent);
     on<StartRecordEvent>(_onMapStartRecordEvent);
     on<StopRecordEvent>(_onMapStopRecordEvent);
@@ -27,6 +28,7 @@ class SpeechTextBloc extends Bloc<SpeechTextEvent, SpeechTextState> {
     try {
       emit(InitialingService(state.stateUI));
       final currentLocaleId = await _speechToTextUsecase.initSpeechToText();
+
       if (currentLocaleId?.isNotEmpty ?? false) {
         emit(InitSucceeded(state.stateUI.copyWith(
           currentLocaleId: currentLocaleId,

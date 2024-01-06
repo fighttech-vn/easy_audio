@@ -1,3 +1,6 @@
+## 0.0.7
++ Default speed to text is `en-US`
+
 ## 0.0.6
 - Handle exit record modal
 
