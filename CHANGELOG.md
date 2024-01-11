@@ -1,3 +1,6 @@
+## 0.0.8
++ Update dependency `audioplayers: 5.0.0`
+
 ## 0.0.7
 + Default speed to text is `en-US`
 
