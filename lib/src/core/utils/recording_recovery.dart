@@ -1,10 +1,10 @@
 import 'dart:io';
 
 import 'package:flutter/foundation.dart';
-import 'package:just_audio/just_audio.dart';
 
 import '../../domain/entities/recording_result.dart';
 import 'easy_audio_cache_info.dart';
+import 'wav_duration.dart';
 import 'wav_header_repair.dart';
 
 class RecordingRecovery {
@@ -45,15 +45,7 @@ class RecordingRecovery {
 
       await WavHeaderRepair.tryRepairIfNeeded(targetPath);
 
-      Duration duration = Duration.zero;
-      final player = AudioPlayer();
-      try {
-        duration = (await player.setFilePath(targetPath)) ?? Duration.zero;
-      } catch (_) {
-        duration = Duration.zero;
-      } finally {
-        await player.dispose();
-      }
+      final duration = await WavDuration.read(targetPath) ?? Duration.zero;
 
       final startTime = startTimeStr != null
           ? DateTime.tryParse(startTimeStr) ?? DateTime.now()

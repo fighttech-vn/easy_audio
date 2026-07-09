@@ -2,10 +2,13 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:audio_session/audio_session.dart';
 import 'package:flutter/foundation.dart';
 import 'package:just_audio/just_audio.dart';
+import 'package:just_audio_background/just_audio_background.dart';
 import 'package:path_provider/path_provider.dart';
 
+import '../../domain/entities/audio_metadata.dart';
 import '../../domain/entities/audio_playback_snapshot.dart';
 
 class AudioPlaybackManager {
@@ -24,6 +27,35 @@ class AudioPlaybackManager {
   bool _initialized = false;
   Future<void>? _setUrlInFlight;
   int _loadToken = 0;
+
+  /// Builds the now-playing entry shown on the lock screen.
+  ///
+  /// The id stays the original [source] even when playback is served from the
+  /// on-disk cache, so the notification identity survives a cache hit.
+  MediaItem _mediaItemFor(String source, AudioMetadata? metadata) {
+    return MediaItem(
+      id: source,
+      title: metadata?.title ?? 'Recording',
+      album: metadata?.album,
+      artist: metadata?.artist,
+      artUri: metadata?.artUri,
+    );
+  }
+
+  /// Recording flips the shared iOS audio session into a record category and
+  /// deactivates it, so the playback category has to be reasserted every time
+  /// rather than once at startup. Without `music()` the session falls back to
+  /// `soloAmbient`, which is silenced by the mute switch and stops on
+  /// backgrounding. `just_audio_background` does not do this for us.
+  Future<void> _activatePlaybackSession() async {
+    try {
+      final session = await AudioSession.instance;
+      await session.configure(const AudioSessionConfiguration.music());
+      await session.setActive(true);
+    } catch (e) {
+      debugPrint('AudioPlaybackManager: audio session activation failed: $e');
+    }
+  }
 
   Future<Directory> _getCacheDir() async {
     final baseDir = await getTemporaryDirectory();
@@ -230,6 +262,7 @@ class AudioPlaybackManager {
 
   Future<void> _setFilePathWithFallback(
     String filePath, {
+    required MediaItem tag,
     String? originalSourceForLogs,
   }) async {
     final f = File(filePath);
@@ -243,18 +276,18 @@ class AudioPlaybackManager {
     }
 
     try {
-      await _player.setFilePath(filePath);
+      await _player.setAudioSource(AudioSource.file(filePath, tag: tag));
       return;
     } catch (e) {
       final label = originalSourceForLogs ?? filePath;
-      debugPrint('AudioPlaybackManager: setFilePath failed ($label): $e');
+      debugPrint('AudioPlaybackManager: setAudioSource failed ($label): $e');
     }
 
     final tmpDir = await getTemporaryDirectory();
     final safeName = 'preview_${DateTime.now().microsecondsSinceEpoch}.m4a';
     final tmpPath = '${tmpDir.path}/$safeName';
     await f.copy(tmpPath);
-    await _player.setFilePath(tmpPath);
+    await _player.setAudioSource(AudioSource.file(tmpPath, tag: tag));
   }
 
   Future<void> _ensureInitialized() async {
@@ -288,32 +321,36 @@ class AudioPlaybackManager {
     });
   }
 
-  Future<void> _setSource(String source, int loadToken) async {
+  Future<void> _setSource(String source, int loadToken, MediaItem tag) async {
     final uri = Uri.tryParse(source);
 
     if (uri != null && uri.scheme == 'file') {
       final filePath = uri.toFilePath();
 
       try {
-        await _player.setUrl(source);
+        await _player.setAudioSource(AudioSource.uri(uri, tag: tag));
         return;
       } catch (_) {}
 
-      await _setFilePathWithFallback(filePath, originalSourceForLogs: source);
+      await _setFilePathWithFallback(
+        filePath,
+        tag: tag,
+        originalSourceForLogs: source,
+      );
       return;
     }
 
     if (uri == null || uri.scheme.isEmpty) {
       if (source.startsWith('/')) {
         try {
-          await _setFilePathWithFallback(source);
+          await _setFilePathWithFallback(source, tag: tag);
           return;
         } catch (_) {}
       }
 
       try {
         if (File(source).existsSync()) {
-          await _setFilePathWithFallback(source);
+          await _setFilePathWithFallback(source, tag: tag);
           return;
         }
       } catch (_) {}
@@ -328,6 +365,7 @@ class AudioPlaybackManager {
         try {
           await _setFilePathWithFallback(
             cachedFile.path,
+            tag: tag,
             originalSourceForLogs: source,
           );
           return;
@@ -341,18 +379,19 @@ class AudioPlaybackManager {
       }
     }
 
-    await _player.setUrl(source);
+    await _player.setAudioSource(AudioSource.uri(Uri.parse(source), tag: tag));
   }
 
-  Future<void> playUrl(String url) async {
-    await playSource(url);
+  Future<void> playUrl(String url, {AudioMetadata? metadata}) async {
+    await playSource(url, metadata: metadata);
   }
 
-  Future<void> playSource(String source) async {
+  Future<void> playSource(String source, {AudioMetadata? metadata}) async {
     if (source.isEmpty) {
       return;
     }
     await _ensureInitialized();
+    await _activatePlaybackSession();
 
     final loadToken = ++_loadToken;
 
@@ -374,6 +413,7 @@ class AudioPlaybackManager {
         _setUrlInFlight = _setSource(
           source,
           loadToken,
+          _mediaItemFor(source, metadata),
         ).then((_) {}).whenComplete(() => _setUrlInFlight = null);
 
         await _setUrlInFlight;
@@ -398,11 +438,11 @@ class AudioPlaybackManager {
     }
   }
 
-  Future<void> toggleUrl(String url) async {
-    await toggleSource(url);
+  Future<void> toggleUrl(String url, {AudioMetadata? metadata}) async {
+    await toggleSource(url, metadata: metadata);
   }
 
-  Future<void> toggleSource(String source) async {
+  Future<void> toggleSource(String source, {AudioMetadata? metadata}) async {
     if (source.isEmpty) {
       return;
     }
@@ -414,7 +454,7 @@ class AudioPlaybackManager {
       return;
     }
 
-    await playSource(source);
+    await playSource(source, metadata: metadata);
   }
 
   Future<void> pause() async {

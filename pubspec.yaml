@@ -1,6 +1,6 @@
 name: easy_audio
 description: Record audio (WAV) and stream realtime speech-to-text transcripts.
-version: 3.0.3
+version: 3.1.0
 homepage: https://github.com/fighttech-vn/easy_audio
 publish_to: "none"
 
@@ -32,6 +32,7 @@ dependencies:
   freezed_annotation: ^3.1.0
 
   wakelock_plus: ^1.5.1
+  just_audio_background: ^0.0.1-beta.17
 
 dev_dependencies:
   flutter_test:
